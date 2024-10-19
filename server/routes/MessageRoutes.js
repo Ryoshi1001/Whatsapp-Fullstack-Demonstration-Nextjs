@@ -5,9 +5,10 @@ import { addAudioMessage, addImageMessage, addMessage, getInitialContactsWithMes
 
 const router = express.Router()
 
-const uploadImage = multer({ dest: 'uploads/images'})
-//upload for audio with multer
-const upload = multer({ dest: "uploads/recordings"})
+//removing multer to fix Vercel deployment can use Cloudinary or AWS in future if hosting on Vercel
+// const uploadImage = multer({ dest: 'uploads/images'})
+// //upload for audio with multer
+// const upload = multer({ dest: "uploads/recordings"})
 
 router.post('/add-message', addMessage)
 //getMessages route
