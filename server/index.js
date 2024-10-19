@@ -27,8 +27,9 @@ app.use((req, res, next) => {
 });
 
 //provides images form uploads pointing route to directory also audio
-app.use("/uploads/images", express.static("uploads/images"))
-app.use("/uploads/recordings", express.static("uploads/recordings"))
+//removed Vercel serverless environment does not write to local file system
+// app.use("/uploads/images", express.static("uploads/images"))
+// app.use("/uploads/recordings", express.static("uploads/recordings"))
 
 //use routes in app
 //add routes for auth routes
