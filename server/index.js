@@ -11,7 +11,14 @@ import MessageRoutes from './routes/MessageRoutes.js'
 
 const app = express(); 
 
-app.use(cors());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:3000", 
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'], 
+  credentials: true, 
+}
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); 
 
 // app.use(cors({
 //   origin: 'http://localhost:3000', // or whatever your client's URL is
