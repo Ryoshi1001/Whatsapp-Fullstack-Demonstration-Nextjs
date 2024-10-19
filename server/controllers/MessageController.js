@@ -86,65 +86,70 @@ export const getMessages = async (req, res, next) => {
 
 
 //controller for addingImageMessage: for sending images in text chat
+// Controller for adding image messages
 export const addImageMessage = async (req, res, next) => {
   try {
-    if(req.file) {
+    // Commenting out file handling logic
+    // if (req.file) {
       const date = Date.now(); 
-      let fileName = "uploads/images/" + date + req.file.originalname; 
-      renameSync(req.file.path, fileName)
-      const prisma = getPrismaInstance()
-      const {from, to} = req.query; 
+      // let fileName = "uploads/images/" + date + req.file.originalname; 
+      // renameSync(req.file.path, fileName); // Comment this line out
 
-      if(from && to) {
+      const prisma = getPrismaInstance();
+      const { from, to } = req.query;
+
+      if (from && to) {
         const message = await prisma.messages.create({
           data: {
-            message: fileName, 
-            sender: { connect: { id: parseInt(from) } }, 
-            receiver: { connect: { id: parseInt(to) } }, 
+            message: `Image upload disabled for troubleshooting at ${date}`, // Placeholder message
+            sender: { connect: { id: parseInt(from) } },
+            receiver: { connect: { id: parseInt(to) } },
             type: "image"
           }
-        }); 
-        return res.status(201).json({message})
+        });
+        return res.status(201).json({ message });
       }
-      return res.status(400).send("From, to is required.")
-    }
-    return res.status(400).send("Image is required")
+      return res.status(400).send("From and To are required.");
+    // }
+    return res.status(400).send("Image is required");
   } catch (error) {
-    console.error(error)
-    next(error)
+    console.error(error);
+    next(error);
   }
-}
+};
 
 
-
+// Controller for adding audio messages
 export const addAudioMessage = async (req, res, next) => {
   try {
-    if(req.file) {
+    // Commenting out file handling logic
+    // if (req.file) {
       const date = Date.now(); 
-      let fileName = "uploads/recordings/" + date + req.file.originalname; 
-      renameSync(req.file.path, fileName); 
-      const prisma = getPrismaInstance(); 
-      const {from, to} = req.query; 
+      // let fileName = "uploads/recordings/" + date + req.file.originalname; 
+      // renameSync(req.file.path, fileName); // Comment this line out
 
-      if(from && to) {
+      const prisma = getPrismaInstance(); 
+      const { from, to } = req.query; 
+
+      if (from && to) {
         const message = await prisma.messages.create({
           data: {
-            message: fileName, 
+            message: `Audio upload disabled for troubleshooting at ${date}`, // Placeholder message
             sender: { connect: { id: parseInt(from) } }, 
             receiver: { connect: { id: parseInt(to) } }, 
             type: "audio"
           }
         }); 
-        return res.status(201).json({message})
+        return res.status(201).json({ message });
       }
-      return res.status(400).send("From, to is required.")
-    }
-    return res.status(400).send("Audio is required")
+      return res.status(400).send("From and To are required.");
+    // }
+    return res.status(400).send("Audio is required");
   } catch (error) {
-    console.error(error)
-    next(error)
+    console.error(error);
+    next(error);
   }
-}
+};
 
 //controller for contacts list with messages from contacts. has map of users only has key value pairs doesnt repeat value for same key; only want single users not multiple users. 
 //start: checking if message is not sent, if calculatedId user is not inside map then destructuring msg and created user object, then checking if sent by isSender then will try to show msg from receiver... 
