@@ -9,7 +9,7 @@ const api_Key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: api_Key,
-  authDomain: "whatsapp-demonstration.firebaseapp.com",
+  authDomain: "whatsapp-frontend-sigma.vercel.app.firebaseapp.com",
   projectId: "whatsapp-demonstration",
   storageBucket: "whatsapp-demonstration.appspot.com",
   messagingSenderId: "623110699885",
