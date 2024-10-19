@@ -31,11 +31,17 @@ app.use((req, res, next) => {
 // app.use("/uploads/images", express.static("uploads/images"))
 // app.use("/uploads/recordings", express.static("uploads/recordings"))
 
+// route for URL fix log error in Vercel
+app.get('/', (req, res) => {
+  res.send('Welcome to the WhatsApp Backend API!');
+});
+
 //use routes in app
 //add routes for auth routes
 app.use('/api/auth', AuthRoutes)
 //add routes for messages
 app.use('/api/messages', MessageRoutes)
+
 
 const PORT = process.env.PORT || 3005; 
 
