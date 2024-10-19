@@ -6,7 +6,7 @@ import MessageBar from './MessageBar'
 const Chat = () => {
   return (
     <div
-    className='border-conversation-border bg-conversation-panel-background flex flex-col h-[100vh] z-10'
+    className='border-conversation-border bg-conversation-panel-background flex flex-col h-[100vh]'
     >
       <ChatHeader/>
       <ChatContainer/>

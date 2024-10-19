@@ -223,9 +223,6 @@ const MessageBar = () => {
           </>
         )
       }
-
-    
-
       {grabPhoto && <PhotoPicker onChange={photoPickerChange} />}
       {showAudioRecorder && <CaptureAudio hide={setShowAudioRecorder} />}
     </div>

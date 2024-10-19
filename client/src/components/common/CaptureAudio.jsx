@@ -219,17 +219,17 @@ const CaptureAudio = ({ hide }) => {
         ) : (
           <div>
             {recordedAudio && (
-              <>
+              <div className=" xs:text-sm xs:flex xs:flex-row xs:gap-2 xs:items-center xs:justify-center w-60 text-center xs:w-10">
                 {!isPlaying ? (
                   <FaPlay onClick={handlePlayRecording} />
                 ) : (
                   <FaStop onClick={handlePauseRecording} />
                 )}
-              </>
+              </div>
             )}
           </div>
         )}
-        <div className="w-60" ref={waveFormRef} hidden={isRecording} />
+        <div className="xs:w-10 w-60" ref={waveFormRef} hidden={isRecording} />
         {recordedAudio && isPlaying && (
           <span>{formatTime(currentPlaybackTime)}</span>
         )}
@@ -238,7 +238,7 @@ const CaptureAudio = ({ hide }) => {
         )}
         <audio ref={audioRef} hidden />
       </div>
-      <div className='xs: mr-2 mr-4'>
+      <div className='xs:mr-2 mr-4'>
         {!isRecording ? (
           <FaMicrophone
             className="text-red-500 cursor-pointer"

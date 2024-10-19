@@ -19,7 +19,7 @@ const VoiceCall = () => {
         roomId: voiceCall.roomId, 
       })
     }
-  }, [voiceCall])
+  },[voiceCall])
   
   return (
     <Container data={voiceCall}/>

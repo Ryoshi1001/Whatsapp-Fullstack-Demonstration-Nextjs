@@ -57,82 +57,81 @@ const Container = ({ data }) => {
   //after getting token with useEffect above with getToken() intialize ZegoCloud
   useEffect(() => {
     const startCall = async () => {
-      import('zego-express-engine-webrtc').then(
-        async ({ ZegoExpressEngine }) => {
-          const zg = new ZegoExpressEngine(
-            parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID),
-            process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET
-          );
-          setZgVar(zg);
+      try {
+        const { ZegoExpressEngine } = await import('zego-express-engine-webrtc');
+        const zg = new ZegoExpressEngine(
+          parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID),
+          process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET
+        );
   
-          zg.on(
-            'roomStreamUpdate',
-            async (roomId, updateType, streamList, extendedData) => {
-              console.log('Room Stream Update:', { roomId, updateType, streamList });
-              if (updateType === 'ADD') {
-                console.log('Adding remote stream');
-                const rmVideo = document.getElementById('remote-video');
-                const vd = document.createElement(data.callType === 'video' ? 'video' : 'audio');
-                vd.id = streamList[0].streamID;
-                vd.autoplay = true;
-                vd.playsInline = true;
-                vd.muted = false;
-                if (rmVideo) {
-                  rmVideo.appendChild(vd);
-                }
-                zg.startPlayingStream(streamList[0].streamID, {
-                  audio: true,
-                  video: true,
-                }).then((stream) => {
-                  console.log('Started playing stream', stream);
-                  vd.srcObject = stream;
-                }).catch(error => {
-                  console.error('Error starting stream:', error);
-                });
-              } else if (
-                updateType === 'DELETE' &&
-                zg &&
-                localStream &&
-                publishStream &&
-                streamList[0].streamID
-              ) {
-                console.log('Destroying stream', streamList[0].streamID);
-                zg.destroyStream(localStream);
-                zg.stopPublishingStream(streamList[0].streamID);
-                zg.logoutRoom(data.roomId.toString());
-                dispatch({
-                  type: reducerCases.END_CALL,
-                });
-              }
+        setZgVar(zg);
+  
+        zg.on('roomStreamUpdate', async (roomId, updateType, streamList, extendedData) => {
+          console.log('Room Stream Update:', { roomId, updateType, streamList });
+          if (updateType === 'ADD') {
+            console.log('Adding remote stream');
+            const rmVideo = document.getElementById('remote-video');
+            const vd = document.createElement(data.callType === 'video' ? 'video' : 'audio');
+            vd.id = streamList[0].streamID;
+            vd.autoplay = true;
+            vd.playsInline = true;
+            vd.muted = false;
+            if (rmVideo) {
+              rmVideo.appendChild(vd);
             }
-          );
-  
-          // Log into Zegocloud room
-          try {
-            await zg.loginRoom(
-              data.roomId.toString(),
-              token,
-              { userID: userInfo.id.toString(), userName: userInfo.name },
-              { userUpdate: true }
-            );
-            console.log('Logged into Zegocloud room successfully');
-          } catch (error) {
-            console.error('Error logging into Zegocloud room:', error);
-          }
-  
-          // Start for local video
-          let localStream;
-          try {
-            localStream = await zg.createStream({
-              camera: {
+            try {
+              const stream = await zg.startPlayingStream(streamList[0].streamID, {
                 audio: true,
-                video: data.callType === 'video' ? true : false,
-              },
+                video: true,
+              });
+              console.log('Started playing stream', stream);
+              vd.srcObject = stream;
+            } catch (error) {
+              console.error('Error starting stream:', error);
+            }
+          } else if (
+            updateType === 'DELETE' &&
+            zg &&
+            localStream &&
+            publishStream &&
+            streamList[0].streamID
+          ) {
+            console.log('Destroying stream', streamList[0].streamID);
+            zg.destroyStream(localStream);
+            zg.stopPublishingStream(streamList[0].streamID);
+            zg.logoutRoom(data.roomId.toString());
+            dispatch({
+              type: reducerCases.END_CALL,
             });
-            console.log('Created local stream successfully');
-            
-            if (localStream && zg) {
-              const localVideo = document.getElementById('local-audio');
+          }
+        });
+  
+        // Log into Zegocloud room
+        try {
+          await zg.loginRoom(
+            data.roomId.toString(),
+            token,
+            { userID: userInfo.id.toString(), userName: userInfo.name },
+            { userUpdate: true }
+          );
+          console.log('Logged into Zegocloud room successfully');
+        } catch (error) {
+          console.error('Error logging into Zegocloud room:', error);
+        }
+  
+        // Start for local video
+        try {
+          const localStream = await zg.createStream({
+            camera: {
+              audio: true,
+              video: data.callType === 'video',
+            },
+          });
+          console.log('Created local stream successfully');
+          
+          if (localStream && zg) {
+            const localVideo = document.getElementById('local-audio');
+            if (localVideo) {
               const videoElement = document.createElement(data.callType === 'video' ? 'video' : 'audio');
               videoElement.id = 'video-local-zego';
               videoElement.className = 'h-28 w-32';
@@ -142,22 +141,32 @@ const Container = ({ data }) => {
   
               localVideo.appendChild(videoElement);
               const td = document.getElementById('video-local-zego');
-              td.srcObject = localStream;
-              const streamID = '123' + Date.now();
-              setPublishStream(streamID);
-              setLocalStream(localStream);
-              zg.startPublishingStream(streamID, localStream);
+              if (td) {
+                td.srcObject = localStream;
+                const streamID = '123' + Date.now();
+                setPublishStream(streamID);
+                setLocalStream(localStream);
+                zg.startPublishingStream(streamID, localStream);
+              } else {
+                console.error('video-local-zego element not found');
+              }
             } else {
-              console.error('Failed to initialize local stream or Zego instance');
+              console.error('local-audio element not found');
             }
-          } catch (error) {
-            console.error('Error creating local stream:', error);
+          } else {
+            console.error('Failed to initialize local stream or Zego instance');
           }
+        } catch (error) {
+          console.error('Error creating local stream:', error);
         }
-      );
+  
+      } catch (error) {
+        console.log("Failed importing or initializing ZegoExpressEngine:", error);
+      }
     };
   
     if (token) {
+      console.log(token);
       startCall();
     }
   }, [token]);
@@ -188,13 +197,14 @@ const Container = ({ data }) => {
     setLocalStream(undefined);
   setPublishStream(undefined);
   };
+  
   return (
     <div className="xs:py-24 border-conversation-border border-l w-full bg-conversation-panel-background flex flex-col h-[100vh] overflow-hidden items-center justify-center text-white">
       <div className="flex flex-col gap-3 items-center">
         <span className="xs:text-3xl text-5xl">{data.name}</span>
         <span className="text-lg">
-          {callAccepted && data.callType !== 'video'
-            ? 'On going call'
+          {callAccepted
+            ? 'Ongoing Call'
             : 'Calling'}
         </span>
       </div>
