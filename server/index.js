@@ -1,62 +1,60 @@
-// nextjs tailwind socket io firebase express nodejs prisma postgresql
-import dotenv from 'dotenv'
-dotenv.config()
-import express from 'express'
-import cors from 'cors'
-import { Server } from 'socket.io'
+import dotenv from 'dotenv';
+dotenv.config();
 
-//importing routes
-import AuthRoutes from './routes/AuthRoute.js'
-import MessageRoutes from './routes/MessageRoutes.js'
+import express from 'express';
+import cors from 'cors';
+import { Server } from 'socket.io';
 
-const app = express(); 
+// Importing routes
+import AuthRoutes from './routes/AuthRoute.js';
+import MessageRoutes from './routes/MessageRoutes.js';
+
+const app = express();
 
 const corsOptions = {
-  origin: ["whatsapp-frontend-sigma.vercel.app"], 
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'], 
-  credentials: true, 
-}
+  origin: ["https://whatsapp-frontend-sigma.vercel.app"],
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+  credentials: true,
+};
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); 
+app.options('*', cors(corsOptions));
 
-app.use(express.json())
+// Set CORS headers for all routes
 app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Access-Control-Allow-Origin", corsOptions.origin[0]);
+  res.setHeader("Access-Control-Allow-Methods", corsOptions.methods.join(','));
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
   next();
 });
 
-//provides images form uploads pointing route to directory also audio
-//removed Vercel serverless environment does not write to local file system
-// app.use("/uploads/images", express.static("uploads/images"))
-// app.use("/uploads/recordings", express.static("uploads/recordings"))
+app.use(express.json());
 
-// route for URL fix log error in Vercel
+// Route for URL fix log error in Vercel
 app.get('/', (req, res) => {
   res.send('Welcome to the WhatsApp Backend API!');
 });
 
-//use routes in app
-//add routes for auth routes
-app.use('/api/auth', AuthRoutes)
-//add routes for messages
-app.use('/api/messages', MessageRoutes)
+// Use routes in app
+app.use('/api/auth', AuthRoutes);
+app.use('/api/messages', MessageRoutes);
 
-
-const PORT = process.env.PORT || 3005; 
+const PORT = process.env.PORT || 3005;
 
 const server = app.listen(PORT, () => {
-  console.log(`SERVER RUNNING ON PORT:${PORT}`)
-})
+  console.log(`SERVER RUNNING ON PORT:${PORT}`);
+});
 
-//if hosting online change origin also for app 
+// Socket.IO configuration
 const io = new Server(server, {
   cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3000", // Your React app's URL
-      methods: ["GET", "POST"],
-      credentials: true,
+    origin: "https://whatsapp-frontend-sigma.vercel.app",
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
+
 
 //maintaining sockets and users global
 //maintain online offline of users here
