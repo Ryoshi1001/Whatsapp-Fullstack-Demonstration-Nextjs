@@ -20,13 +20,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); 
 
-// app.use(cors({
-//   origin: 'http://localhost:3000', // or whatever your client's URL is
-//   methods: ['GET', 'POST'],
-//   credentials: true
-// }));
-
 app.use(express.json())
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  next();
+});
 
 //provides images form uploads pointing route to directory also audio
 app.use("/uploads/images", express.static("uploads/images"))
