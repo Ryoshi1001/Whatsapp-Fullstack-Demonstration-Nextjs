@@ -15,10 +15,11 @@ router.post('/add-message', addMessage)
 router.get('/get-messages/:from/:to', getMessages)
 
 //route for adding image files from messageBar.jsx using photoPickerChange() and adding multer for file handling here next to router plus addImageMessage controller for route
-router.post('/add-image-message', uploadImage.single("image"), addImageMessage)
+//removing multer to fix Vercel deployment can use Cloudinary or AWS in future if hosting on Vercel
+// router.post('/add-image-message', uploadImage.single("image"), addImageMessage)
 
-//route for adding audio messages and sending from messageBar
-router.post('/add-audio-message', upload.single("audio"), addAudioMessage)
+// //route for adding audio messages and sending from messageBar
+// router.post('/add-audio-message', upload.single("audio"), addAudioMessage)
 
 //route for getting contacts with initial messages for List component inside of ChatList component on left section of Main Chat component. 
 router.get('/get-initial-contacts/:from', getInitialContactsWithMessages)
