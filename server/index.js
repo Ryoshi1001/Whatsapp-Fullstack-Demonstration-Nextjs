@@ -12,7 +12,7 @@ import MessageRoutes from './routes/MessageRoutes.js'
 const app = express(); 
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000", 
+  origin: ["whatsapp-frontend-sigma.vercel.app"], 
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'], 
   credentials: true, 
 }
