@@ -13,7 +13,8 @@ const firebaseConfig = {
   projectId: "whatsapp-demonstration",
   storageBucket: "whatsapp-demonstration.appspot.com",
   messagingSenderId: "623110699885",
-  appId: "1:623110699885:web:7afdd53d10c513c8f53864"
+  appId: "1:623110699885:web:7afdd53d10c513c8f53864", 
+  redirectUri: "https://whatsapp-frontend-sigma.vercel.app/__/auth/handler"
 };
 
 // Initialize Firebase use ternary to check if already initialized
