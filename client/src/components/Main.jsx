@@ -169,26 +169,32 @@ const Main = () => {
     }
   }, [socket.current, dispatch]);
 
-  useEffect(() => {
-    const getMessages = async () => {
+
+//new useEffect for messages to work on Vercel
+useEffect(() => {
+  const getMessages = async () => {
+    if (currentChatUser?.id && userInfo?.id) {
       try {
-        const {
-          data: { messages },
-        } = await axios.get(
+        const response = await axios.get(
           `${GET_MESSAGES_ROUTE}/${userInfo.id}/${currentChatUser.id}`
         );
         dispatch({
           type: reducerCases.SET_MESSAGES,
-          messages,
+          messages: response.data.messages,
         });
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
-    };
-    if (currentChatUser?.id && userInfo?.id) {
-      getMessages();
     }
-  }, [currentChatUser]);
+  };
+
+  getMessages(); // Fetch messages immediately
+
+  // Set up polling for messages every few seconds
+  const intervalId = setInterval(getMessages, 1000); // Poll every 5 seconds
+
+  return () => clearInterval(intervalId); // Clean up on unmount
+}, [currentChatUser, userInfo]); // Dependencies include currentChatUser and userInfo
 
   return (
     <>
