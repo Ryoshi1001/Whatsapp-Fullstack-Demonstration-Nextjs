@@ -12,13 +12,17 @@ import MessageRoutes from './routes/MessageRoutes.js'
 const app = express(); 
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL, 
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'], 
-  credentials: true, 
-}
+  origin: [
+    process.env.FRONTEND_URL, // e.g., https://your-frontend-url.vercel.app
+    process.env.BACKEND_URL,  // e.g., https://your-backend-url.vercel.app
+    'http://localhost:3000'    // For local testing
+  ],
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+  credentials: true,
+};
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); 
+app.options('*', cors(corsOptions));
 
 app.use(express.json())
 
