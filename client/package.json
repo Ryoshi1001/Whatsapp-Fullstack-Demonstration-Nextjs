@@ -24,8 +24,10 @@
     "zego-express-engine-webrtc": "^3.6.0"
   },
   "devDependencies": {
-    "eslint": "^8",
+    "eslint": "^9.13.0",
     "eslint-config-next": "14.2.13",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.1"
   }
