@@ -17,7 +17,6 @@ import IncomingVideoCall from './common/IncomingVideoCall';
 import IncomingCall from './common/IncomingCall';
 
 const Main = () => {
-  //checking for userInfo in Main first because undefined in nested ChatList: problem with loading avatar in child component. Using method from Firebase: onAuthStateChanged(firebaseAth, ) like a useEffect Hook for Firebase.
   const router = useRouter();
   const [
     {
@@ -33,7 +32,6 @@ const Main = () => {
   ] = useStateProvider();
   const [redirectLogin, setRedirectLogin] = useState(false);
   const [socketEvent, setSocketEvent] = useState(false);
-  //ref for socket io
   const socket = useRef();
 
   useEffect(() => {
@@ -43,53 +41,48 @@ const Main = () => {
   }, [redirectLogin]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      firebaseAuth,
-      async (currentUser) => {
-        if (!currentUser) {
-          setRedirectLogin(true);
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
+      if (!currentUser) {
+        setRedirectLogin(true);
+      }
+
+      if (!userInfo && currentUser?.email) {
+        const { data } = await axios.post(CHECK_USER_ROUTE, {
+          email: currentUser.email,
+        });
+
+        console.log("user data", data);
+
+        if (!data.status) {
+          router.push('/login');
         }
 
-        if (!userInfo && currentUser?.email) {
-          const { data } = await axios.post(CHECK_USER_ROUTE, {
-            email: currentUser.email,
-          });
-
-          console.log("user data", data);
-
-          if (!data.status) {
-            router.push('/login');
-          }
-
-          if (data.data) {
-            const {
+        if (data.data) {
+          const {
+            id,
+            name,
+            email,
+            profilePicture: profileImage,
+            status,
+          } = data.data;
+          dispatch({
+            type: reducerCases.SET_USER_INFO,
+            userInfo: {
               id,
               name,
               email,
-              profilePicture: profileImage,
+              profileImage,
               status,
-            } = data.data;
-            dispatch({
-              type: reducerCases.SET_USER_INFO,
-              userInfo: {
-                id,
-                name,
-                email,
-                profileImage,
-                status,
-              },
-            });
-          }
+            },
+          });
         }
       }
-    );
+    });
 
     return () => unsubscribe();
   }, [userInfo, dispatch]);
 
-  //useEffect when have userInfo: import io from socket.io.client
-  //HOST from apiRoutes
-  //store socket in reducers
+  // Socket connection
   useEffect(() => {
     if (userInfo) {
       socket.current = io(HOST, {
@@ -97,12 +90,32 @@ const Main = () => {
         transports: ['websocket'],
       });
       socket.current.on('connect', () => {
-        console.log('Socket connected:', socket.current.connected);
+        console.log('Vercel Socket connected:', socket.current.connected);
         socket.current.emit('add-user', userInfo.id);
       });
+
       socket.current.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
+        console.error('Vercel Socket connection error:', error);
       });
+
+      socket.current.on('disconnect', () => {
+        console.log('Vercel Socket disconnected. Attempting to reconnect...');
+        socket.current.connect(); // Attempt to reconnect
+      });
+
+      // Incoming video call handling
+      socket.current.on('incoming-video-call', ({ from, roomId, callType }) => {
+        console.log("Incoming video call detected:", { from, roomId, callType });
+        dispatch({
+          type: reducerCases.SET_INCOMING_VIDEO_CALL,
+          incomingVideoCall: {
+            ...from,
+            roomId,
+            callType,
+          },
+        });
+      });
+
       dispatch({
         type: reducerCases.SET_SOCKET,
         socket,
@@ -110,10 +123,28 @@ const Main = () => {
     }
   }, [userInfo]);
 
-  //check if socket.current has value and is false
-  // if (socket.current && !socket.current)
+  // Outgoing call logic
+  useEffect(() => {
+    // Ensure `data` is defined; you may need to pass it as a prop or state
+    if (data && data.type === 'out-going') {
+      console.log("Initiating outgoing video call...");
+      socket.current.emit('outgoing-video-call', {
+        to: data.id,
+        from: {
+          id: userInfo.id,
+          profilePicture: userInfo.profileImage,
+          name: userInfo.name,
+        },
+        callType: data.callType,
+        roomId: data.roomId,
+      });
+    }
+  }, [data]); // Ensure `data` is available in this context
+
+  // Message handling
   useEffect(() => {
     if (socket.current && !socketEvent) {
+
       socket.current.on('msg-receive', (data) => {
         dispatch({
           type: reducerCases.ADD_MESSAGE,
@@ -135,66 +166,35 @@ const Main = () => {
         });
       });
 
-      socket.current.on('incoming-video-call', ({ from, roomId, callType }) => {
-        dispatch({
-          type: reducerCases.SET_INCOMING_VIDEO_CALL,
-          incomingVideoCall: {
-            ...from,
-            roomId,
-            callType,
-          },
-        });
-      });
-
-      socket.current.on('voice-call-rejected', () => {
-        dispatch({
-          type: reducerCases.END_CALL,
-        });
-      });
-
-      socket.current.on('video-call-rejected', () => {
-        dispatch({
-          type: reducerCases.END_CALL,
-        });
-      });
-
-      socket.current.on("online-users", ({onlineUsers}) => {
-        dispatch({
-          type: reducerCases.SET_ONLINE_USERS, 
-          onlineUsers, 
-        })
-      })
-
-      setSocketEvent(true);
+      // Cleanup function
+      return () => setSocketEvent(true);
     }
   }, [socket.current, dispatch]);
 
-
-//new useEffect for messages to work on Vercel
-useEffect(() => {
-  const getMessages = async () => {
-    if (currentChatUser?.id && userInfo?.id) {
-      try {
-        const response = await axios.get(
-          `${GET_MESSAGES_ROUTE}/${userInfo.id}/${currentChatUser.id}`
-        );
-        dispatch({
-          type: reducerCases.SET_MESSAGES,
-          messages: response.data.messages,
-        });
-      } catch (error) {
-        console.error('Error fetching messages:', error);
+  // Message polling
+  useEffect(() => {
+    const getMessages = async () => {
+      if (currentChatUser?.id && userInfo?.id) {
+        try {
+          const response = await axios.get(
+            `${GET_MESSAGES_ROUTE}/${userInfo.id}/${currentChatUser.id}`
+          );
+          dispatch({
+            type: reducerCases.SET_MESSAGES,
+            messages: response.data.messages,
+          });
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+        }
       }
-    }
-  };
+    };
 
-  getMessages(); // Fetch messages immediately
+    getMessages(); // Fetch messages immediately
 
-  // Set up polling for messages every few seconds
-  const intervalId = setInterval(getMessages, 1000); // Poll every 5 seconds
+    const intervalId = setInterval(getMessages, 1000); // Poll every second
 
-  return () => clearInterval(intervalId); // Clean up on unmount
-}, [currentChatUser, userInfo]); // Dependencies include currentChatUser and userInfo
+    return () => clearInterval(intervalId); // Clean up on unmount
+  }, [currentChatUser, userInfo]);
 
   return (
     <>
@@ -214,9 +214,7 @@ useEffect(() => {
         <div className="xs:grid xs:grid-cols-[30%_70%] grid grid-cols-main w-screen h-screen max-h-screen max-w-screen overflow-hidden">
           <ChatList />
           {currentChatUser ? (
-            <div
-              className={messagesSearch ? 'grid grid-cols-2' : 'grid-cols-2'}
-            >
+            <div className={messagesSearch ? 'grid grid-cols-2' : 'grid-cols-2'}>
               <Chat />
               {messagesSearch && <SearchMessages />}
             </div>
