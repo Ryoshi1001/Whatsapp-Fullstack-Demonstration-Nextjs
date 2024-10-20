@@ -20,6 +20,9 @@
       "src": "/(.*)",
       "dest": "index.js",
       "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
+    }, 
+    {
+      "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }]
     }
   ]
 }
