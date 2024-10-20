@@ -1,10 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,24 +8,25 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String
-  profilePicture String @default("")
-  about String 
-  sentMessages Messages[] @relation("sentMessages")
+  id               Int        @id @default(autoincrement())
+  email            String     @unique
+  name             String
+  profilePicture   String     @default("")
+  about            String
   receivedMessages Messages[] @relation("receivedMessages")
+  sentMessages     Messages[] @relation("sentMessages")
 }
 
 model Messages {
-  id Int @id @default(autoincrement())
-  sender User @relation("sentMessages", fields: [senderId], references: [id])
-  senderId Int
-  receiver User @relation("receivedMessages", fields: [receiverId], references: [id])
-  receiverId Int
-  type String @default("text")
-  message String
-  messageStatus String @default("sent")
-  createdAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  senderId      Int
+  receiverId    Int
+  type          String   @default("text")
+  message       String
+  messageStatus String   @default("sent")
+  createdAt     DateTime @default(now())
+  receiver      User     @relation("receivedMessages", fields: [receiverId], references: [id])
+  sender        User     @relation("sentMessages", fields: [senderId], references: [id])
+
   @@unique([senderId, receiverId, createdAt, message])
 }
