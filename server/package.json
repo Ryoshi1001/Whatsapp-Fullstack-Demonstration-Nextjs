@@ -5,9 +5,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node index.js", 
-    "dev": "nodemon index.js", 
-    "build": "npx prisma generate && next build",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "npx prisma migrate deploy && npx prisma generate && node index.js",
     "postinstall": "npx prisma generate"
   },
   "dependencies": {
