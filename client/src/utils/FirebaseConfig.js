@@ -4,17 +4,14 @@ import { getApps, initializeApp } from "firebase/app";
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth } from 'firebase/auth'
 
-const api_Key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: api_Key,
-  authDomain: "whatsapp-frontend-sigma.vercel.app.firebaseapp.com",
-  projectId: "whatsapp-demonstration",
-  storageBucket: "whatsapp-demonstration.appspot.com",
-  messagingSenderId: "623110699885",
-  appId: "1:623110699885:web:7afdd53d10c513c8f53864", 
-  redirectUri: "https://whatsapp-frontend-sigma.vercel.app/__/auth/handler"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  redirectUri: "https://whatsapp-frontend-sigma.vercel.app/__/auth/handler", 
 };
 
 // Initialize Firebase use ternary to check if already initialized
