@@ -1,3 +1,5 @@
+// https://www.youtube.com/watch?v=keYFkLycaDg 
+// 9:16 mins
 // nextjs tailwind socket io firebase express nodejs prisma postgresql
 import dotenv from 'dotenv'
 dotenv.config()
@@ -11,44 +13,25 @@ import MessageRoutes from './routes/MessageRoutes.js'
 
 const app = express(); 
 
-const corsOptions = {
-  origin: [
-    process.env.FRONTEND_URL, // e.g., https://your-frontend-url.vercel.app
-    process.env.BACKEND_URL,  // e.g., https://your-backend-url.vercel.app
-    'http://localhost:3000'    // For local testing
-  ],
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
-  credentials: true,
-};
+app.use(cors());
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+// app.use(cors({
+//   origin: 'http://localhost:3000', // or whatever your client's URL is
+//   methods: ['GET', 'POST'],
+//   credentials: true
+// }));
 
 app.use(express.json())
 
 //provides images form uploads pointing route to directory also audio
-//removed Vercel serverless environment does not write to local file system
 // app.use("/uploads/images", express.static("uploads/images"))
 // app.use("/uploads/recordings", express.static("uploads/recordings"))
-
-// route for URL fix log error in Vercel
-app.get('/', (req, res) => {
-  res.send('Welcome to the WhatsApp Backend API!');
-});
 
 //use routes in app
 //add routes for auth routes
 app.use('/api/auth', AuthRoutes)
 //add routes for messages
 app.use('/api/messages', MessageRoutes)
-
-//CORS and COEP/COOP Configuration
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
-  // res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  // res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  next();
-});
 
 const PORT = process.env.PORT || 3005; 
 
@@ -59,7 +42,7 @@ const server = app.listen(PORT, () => {
 //if hosting online change origin also for app 
 const io = new Server(server, {
   cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3000", // Your React app's URL
+      origin:  process.env.FRONTEND_URL || "http://localhost:3000", // Your React app's URL
       methods: ["GET", "POST"],
       credentials: true,
   },
@@ -210,6 +193,5 @@ io.on("connection", (socket) => {
   })
 
 });
-
 
 

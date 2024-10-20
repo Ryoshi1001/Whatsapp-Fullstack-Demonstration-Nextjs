@@ -17,6 +17,7 @@ import IncomingVideoCall from './common/IncomingVideoCall';
 import IncomingCall from './common/IncomingCall';
 
 const Main = () => {
+  //checking for userInfo in Main first because undefined in nested ChatList: problem with loading avatar in child component. Using method from Firebase: onAuthStateChanged(firebaseAth, ) like a useEffect Hook for Firebase.
   const router = useRouter();
   const [
     {
@@ -32,26 +33,24 @@ const Main = () => {
   ] = useStateProvider();
   const [redirectLogin, setRedirectLogin] = useState(false);
   const [socketEvent, setSocketEvent] = useState(false);
+  //ref for socket io
   const socket = useRef();
 
-  // Redirect to login if redirectLogin is true
   useEffect(() => {
     if (redirectLogin) {
       router.push('/login');
     }
   }, [redirectLogin]);
 
-  // Firebase authentication state change listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
-      if (!currentUser) {
-        // redirect recommendation here from perplexity ai
-        setRedirectLogin(true);
-        return; 
-      }
+    const unsubscribe = onAuthStateChanged(
+      firebaseAuth,
+      async (currentUser) => {
+        if (!currentUser) {
+          setRedirectLogin(true);
+        }
 
-      if (!userInfo && currentUser?.email) {
-        try {
+        if (!userInfo && currentUser?.email) {
           const { data } = await axios.post(CHECK_USER_ROUTE, {
             email: currentUser.email,
           });
@@ -59,7 +58,6 @@ const Main = () => {
           console.log("user data", data);
 
           if (!data.status) {
-            // Redirect if user not found in your database
             router.push('/login');
           }
 
@@ -82,18 +80,16 @@ const Main = () => {
               },
             });
           }
-        } catch (error) {
-          console.error('Error fetching user info:', error);
-          // Redirect on error
-          router.push('/login');
         }
       }
-    });
+    );
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [userInfo, dispatch]);
 
-  // Socket connection logic
+  //useEffect when have userInfo: import io from socket.io.client
+  //HOST from apiRoutes
+  //store socket in reducers
   useEffect(() => {
     if (userInfo) {
       socket.current = io(HOST, {
@@ -114,7 +110,8 @@ const Main = () => {
     }
   }, [userInfo]);
 
-  // Socket event handling
+  //check if socket.current has value and is false
+  // if (socket.current && !socket.current)
   useEffect(() => {
     if (socket.current && !socketEvent) {
       socket.current.on('msg-receive', (data) => {
@@ -161,22 +158,23 @@ const Main = () => {
         });
       });
 
-      socket.current.on("online-users", ({ onlineUsers }) => {
+      socket.current.on("online-users", ({onlineUsers}) => {
         dispatch({
           type: reducerCases.SET_ONLINE_USERS, 
           onlineUsers, 
-        });
-      });
+        })
+      })
 
       setSocketEvent(true);
     }
   }, [socket.current, dispatch]);
 
-  // Fetch messages based on current chat user and user info
   useEffect(() => {
     const getMessages = async () => {
       try {
-        const { data: { messages } } = await axios.get(
+        const {
+          data: { messages },
+        } = await axios.get(
           `${GET_MESSAGES_ROUTE}/${userInfo.id}/${currentChatUser.id}`
         );
         dispatch({
@@ -187,7 +185,6 @@ const Main = () => {
         console.error('Error fetching messages:', error);
       }
     };
-    
     if (currentChatUser?.id && userInfo?.id) {
       getMessages();
     }
@@ -211,7 +208,9 @@ const Main = () => {
         <div className="xs:grid xs:grid-cols-[30%_70%] grid grid-cols-main w-screen h-screen max-h-screen max-w-screen overflow-hidden">
           <ChatList />
           {currentChatUser ? (
-            <div className={messagesSearch ? 'grid grid-cols-2' : 'grid-cols-2'}>
+            <div
+              className={messagesSearch ? 'grid grid-cols-2' : 'grid-cols-2'}
+            >
               <Chat />
               {messagesSearch && <SearchMessages />}
             </div>
