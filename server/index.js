@@ -22,11 +22,6 @@ app.options('*', cors(corsOptions));
 
 app.use(express.json())
 
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  next();
-});
-
 //provides images form uploads pointing route to directory also audio
 //removed Vercel serverless environment does not write to local file system
 // app.use("/uploads/images", express.static("uploads/images"))
