@@ -110,31 +110,12 @@ const Main = () => {
         socket.current.connect(); // Attempt to reconnect
       });
 
-    
-
       dispatch({
         type: reducerCases.SET_SOCKET,
         socket,
       });
     }
   }, [userInfo]);
-
-  //test for vercel
-  useEffect(() => {
-    if (data && data.type === 'out-going') {
-      console.log("Initiating outgoing video call...");
-      socket.current.emit('outgoing-video-call', {
-        to: data.id,
-        from: {
-          id: userInfo.id,
-          profilePicture: userInfo.profileImage,
-          name: userInfo.name,
-        },
-        callType: data.callType,
-        roomId: data.roomId,
-      });
-    }
-  }, [data]);
 
 
 
@@ -154,8 +135,6 @@ const Main = () => {
       });
 
       socket.current.on('incoming-voice-call', ({ from, roomId, callType }) => {
-        console.log("Incoming video call detected:", { from, roomId, callType });
-
         dispatch({
           type: reducerCases.SET_INCOMING_VOICE_CALL,
           incomingVoiceCall: {
