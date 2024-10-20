@@ -27,7 +27,12 @@ app.use(express.json())
 // app.use("/uploads/images", express.static("uploads/images"))
 // app.use("/uploads/recordings", express.static("uploads/recordings"))
 
-//use routes in app
+//Root route
+app.get('/', (req, res) => {
+  res.send("Vercel backend API working")
+})
+
+//use routes Api routes
 //add routes for auth routes
 app.use('/api/auth', AuthRoutes)
 //add routes for messages
